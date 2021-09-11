@@ -17,9 +17,6 @@ class HomeBloc extends BaseBloc<HomeEvent> {
   void init() {
     /// escuta os eventos
     listenOn<HomeEvent>(handleEvent);
-
-    /// inicializa chamando o repository
-    _loadAll();
   }
 
   @override
@@ -28,7 +25,7 @@ class HomeBloc extends BaseBloc<HomeEvent> {
       _loadAll();
     }
     if (event is Details) {
-      /// TODO 
+      /// TODO
     }
   }
 
