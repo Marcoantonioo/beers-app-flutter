@@ -2,6 +2,7 @@ import 'package:beers_app/di/application_di.dart';
 import 'package:beers_app/domain/beer.dart';
 import 'package:beers_app/presentation/bloc/base_bloc.dart';
 import 'package:beers_app/presentation/bloc/home/home_bloc.dart';
+import 'package:beers_app/presentation/bloc/home/home_event.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -30,6 +31,10 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: _buildAppBar(),
       body: _buildContent(),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _bloc.dispatchEvent(LoadAll()),
+        child: Icon(Icons.refresh),
+      ),
     );
   }
 
@@ -58,16 +63,14 @@ class _HomePageState extends State<HomePage> {
     return StreamBuilder<List<Beer>>(
       stream: _bloc.streamOf<List<Beer>>(key: HomeKey.LIST),
       builder: (_, snapshot) {
-        final list = snapshot.data;
-
-        if (list == null) {
-          return SizedBox.shrink();
-        }
+        final list = snapshot.data ?? [];
 
         if (list.isEmpty) {
           return Center(
-            child: Text('Nenhuma bebida encontrada'),
-          );
+              child: Text(
+            'Nenhuma bebida encontrada\nToque no botão abaixo para carregar as bebidas',
+            textAlign: TextAlign.center,
+          ));
         }
 
         return ListView.separated(
