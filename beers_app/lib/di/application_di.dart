@@ -1,4 +1,5 @@
 import 'package:beers_app/di/beer_di.dart';
+import 'package:beers_app/di/details_di.dart';
 import 'package:beers_app/di/home_di.dart';
 import 'package:beers_app/di/http_di.dart';
 import 'package:beers_app/di/sys_di.dart';
@@ -13,6 +14,7 @@ class ApplicationDI {
     BeerDI.registerAll(container);
     HomeDI.registerAll(container);
     SysDI.registerAll(container);
+    DetailsDI.registerAll(container);
   }
 
   static T resolve<T extends Object>() {

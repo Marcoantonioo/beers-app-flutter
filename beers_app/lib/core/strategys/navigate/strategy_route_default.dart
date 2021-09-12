@@ -1,7 +1,7 @@
+import 'package:beers_app/core/strategys/navigate/strategy_route.dart';
 import 'package:beers_app/core/sys/router/navigation_service.dart';
 import 'package:beers_app/core/sys/router/route_back.dart';
 import 'package:beers_app/core/sys/router/route_forward.dart';
-import 'package:beers_app/core/sys/router/strategy_route.dart';
 import 'package:flutter/cupertino.dart';
 
 ///Implementação padrão do [StrategyRoute].
