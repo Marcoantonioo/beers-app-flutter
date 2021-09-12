@@ -142,13 +142,6 @@ class _HomePageState extends State<HomePage> {
                     textAlign: TextAlign.center,
                   ),
                 ),
-                const SizedBox(
-                  height: 10,
-                ),
-                Text(
-                  'Primeira bebida \n${entity.firstBrewed ?? '--'}',
-                  textAlign: TextAlign.center,
-                ),
               ],
             ),
           )),
