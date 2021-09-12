@@ -39,18 +39,22 @@ abstract class BaseBloc<Event> extends FancyDelegate {
 
   void navigateToRoot() => sysBloc.dispatchRoute(SysRoute.toRoot());
 
+  void dispatchIsLoading(bool isLoading) {
+    dispatchOn<bool>(isLoading, key: BaseBlocKey.LOADING);
+  }
+
   Future<void> doOnlineAction({
     required Function action,
     Function? onError,
     Function? onFinish,
   }) async {
     try {
-      dispatchOn<bool>(true, key: BaseBlocKey.LOADING);
+      dispatchIsLoading(true);
       await action.call();
     } on Exception catch (error, _) {
       onError?.call();
     } finally {
-      dispatchOn<bool>(false, key: BaseBlocKey.LOADING);
+      dispatchIsLoading(false);
       onFinish?.call();
     }
   }

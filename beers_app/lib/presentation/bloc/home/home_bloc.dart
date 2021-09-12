@@ -18,14 +18,17 @@ class HomeBloc extends BaseBloc<HomeEvent> {
   })  : _beerRepository = beerRepository,
         assert(beerRepository != null),
         super(sysBloc: sysBloc);
+
   @override
   void dispatchEvent(HomeEvent event) => dispatchOn<HomeEvent>(event);
 
   @override
   void init() {
-    /// escuta os eventos
     listenOn<HomeEvent>(handleEvent);
-     _loadAll();
+    listenOn<String>(_handleSearch, key: HomeKey.SEARCH);
+
+    /// ao criar o objeto já carrega as bebidas iniciais
+    _loadAll();
   }
 
   @override
@@ -53,23 +56,44 @@ class HomeBloc extends BaseBloc<HomeEvent> {
   void handleCallRepository() {
     /// a cada chamada incrementamos a pagina.
     page += 1;
-    _beerRepository!.loadAll(page, perPage).then(
-          (value) => dispatchValueList(value),
-        );
+    _beerRepository!.loadAll(page, perPage).then((value) {
+      /// para cada resultado retornado do repository
+      /// incrementamos a lista atual [mainList]
+      value.forEach((it) {
+        mainList.add(it);
+      });
+
+      dispatchValueList(mainList);
+    });
+  }
+
+  void _handleSearch(String? query) {
+    dispatchIsLoading(true);
+    if (query == null || query == "" || query.length < 2) {
+      dispatchValueList(mainList);
+      dispatchIsLoading(false);
+      return;
+    } else {
+      Future.delayed(const Duration(seconds: 2), () {
+        final filtred = mainList
+            .where((element) => element.name!
+                .toLowerCase()
+                .trim()
+                .contains(query.toLowerCase().trim()))
+            .toList();
+
+        dispatchValueList(filtred);
+        dispatchIsLoading(false);
+      });
+    }
   }
 
   void dispatchValueList(List<Beer> value) {
-    /// para cada resultado retornado do repository
-    /// incrementamos a lista atual [mainList]
-    value.forEach((it) {
-      mainList.add(it);
-    });
-
     dispatchOn<List<Beer>>(
-      mainList,
+      value,
       key: HomeKey.LIST,
     );
   }
 }
 
-enum HomeKey { LIST }
+enum HomeKey { LIST, SEARCH }
