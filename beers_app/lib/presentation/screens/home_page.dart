@@ -3,11 +3,11 @@ import 'package:beers_app/domain/beer.dart';
 import 'package:beers_app/presentation/bloc/base_bloc.dart';
 import 'package:beers_app/presentation/bloc/home/home_bloc.dart';
 import 'package:beers_app/presentation/bloc/home/home_event.dart';
+import 'package:beers_app/presentation/widget/app_bar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-/// TODO melhorar layout e implementar mais funcionalidades
 class HomePage extends StatefulWidget {
   const HomePage._();
 
@@ -26,21 +26,27 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   HomeBloc get _bloc => Provider.of<HomeBloc>(context, listen: false);
 
+  late ScrollController _scrollController;
+
+  @override
+  void initState() {
+    _scrollController = ScrollController();
+    _scrollController.addListener(_scrollListener);
+    super.initState();
+  }
+
+  void _scrollListener() {
+    /// quando chegar no fim da pagina carregamos mais
+    if (_scrollController.position.atEdge) {
+      _bloc.dispatchEvent(LoadAll());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _buildAppBar(),
+      appBar: MyAppBar(title: 'Beers'),
       body: _buildContent(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _bloc.dispatchEvent(LoadAll()),
-        child: Icon(Icons.refresh),
-      ),
-    );
-  }
-
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      title: Text('Beers'),
     );
   }
 
@@ -63,7 +69,10 @@ class _HomePageState extends State<HomePage> {
     return StreamBuilder<List<Beer>>(
       stream: _bloc.streamOf<List<Beer>>(key: HomeKey.LIST),
       builder: (_, snapshot) {
-        final list = snapshot.data ?? [];
+        final list = snapshot.data;
+        if (list == null) {
+          return const SizedBox();
+        }
 
         if (list.isEmpty) {
           return Center(
@@ -73,29 +82,60 @@ class _HomePageState extends State<HomePage> {
           ));
         }
 
-        return ListView.separated(
-            padding: const EdgeInsets.all(8.0),
-            itemBuilder: (_, index) => _buildItemList(list[index]),
-            separatorBuilder: (_, index) => Divider(),
-            itemCount: list.length);
+        return GridView.builder(
+          padding: const EdgeInsets.all(10.0),
+          gridDelegate: new SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2, crossAxisSpacing: 5, mainAxisSpacing: 5),
+          itemBuilder: (_, index) {
+            if (list.length > index) {
+              final beer = list[index];
+              return _buildItemList(beer);
+            } else {
+              return _buildBottomLoader();
+            }
+          },
+          itemCount: list.length + 1,
+          controller: _scrollController,
+        );
       },
     );
   }
 
   Widget _buildItemList(Beer entity) {
-    return Row(
-      children: [
-        Container(
-          height: 70,
-          width: 70,
-          child: Image.network(entity.imageUrl!),
+    return GestureDetector(
+      onTap: () => _bloc.dispatchEvent(Details(entity: entity)),
+      child: Card(
+        elevation: 0.5,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 70,
+              height: 70,
+              child: Image.network(entity.imageUrl!),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              entity.name ?? '--',
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
-        Text(entity.name ?? "--"),
-      ],
+      ),
     );
   }
 
   Widget _buildLoader() {
-    return Center(child: CircularProgressIndicator());
+    return LinearProgressIndicator(color: Colors.red,);
+  }
+
+  Widget _buildBottomLoader() {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.1,
+      width: double.infinity,
+      child: const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
   }
 }

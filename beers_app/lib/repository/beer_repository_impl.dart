@@ -13,9 +13,15 @@ class BeerRepositoryImpl extends BeerRepository {
   static const _endpoint = 'beers';
 
   @override
-  Future<List<Beer>> loadAll() async {
-    final request = await _httpRemote!
-        .doRequest(RequestModel(endpoint: _endpoint, method: Method.GET));
+  Future<List<Beer>> loadAll(int page, int perPage ) async {
+    final request = await _httpRemote!.doRequest(RequestModel(
+      endpoint: _endpoint,
+      method: Method.GET,
+      queryParameters: {
+        'page': '$page',
+        'per_pag': '$perPage',
+      },
+    ));
     return request.map((e) => Beer.fromJson(e)).toList();
   }
 }
